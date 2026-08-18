@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "raylib.h"
 #include "isometric.h"
 #include "player.h"
@@ -66,9 +67,46 @@ static bool IsInAttackRange(GameState state, Player* player, TileMap* map, int t
     return false;
 }
 
+// Spawn enemy at random walkable tile (not player, not old enemy)
+static void SpawnEnemy(Player* player, TileMap* map, Vector2* enemyPos) {
+    int playerX = (int)roundf(player->worldPos.x);
+    int playerZ = (int)roundf(player->worldPos.z);
+    int oldX = (int)enemyPos->x;
+    int oldZ = (int)enemyPos->y;
+    // Collect all walkable tiles
+    int candidateX[100], candidateZ[100];
+    int count = 0;
+    for (int z = 0; z < map->height; z++) {
+        for (int x = 0; x < map->width; x++) {
+            Tile* tile = GetTile(map, x, z);
+            if (!tile) continue;
+            // Skip player tile and old enemy tile
+            if (x == playerX && z == playerZ) continue;
+            if (x == oldX && z == oldZ) continue;
+            // Skip tiles that are occupied by other enemies? We'll just keep one enemy.
+            // Also skip water? We'll allow any tile.
+            candidateX[count] = x;
+            candidateZ[count] = z;
+            count++;
+        }
+    }
+    if (count == 0) {
+        // No candidate, place at (1,1) as fallback
+        enemyPos->x = 1;
+        enemyPos->y = 1;
+        return;
+    }
+    int idx = rand() % count;
+    enemyPos->x = (float)candidateX[idx];
+    enemyPos->y = (float)candidateZ[idx];
+}
+
 int main(void) {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Isometric RPG - Combat");
     SetTargetFPS(60);
+
+    // Seed random
+    srand((unsigned int)time(NULL));
 
     TileMap tilemap = CreateTileMap(MAP_SIZE, MAP_SIZE, TILE_SIZE);
     GenerateTestMap(&tilemap);
@@ -109,14 +147,17 @@ int main(void) {
         hoverValid = false;
         enemyHover = false;
 
-        if (mouseX == (int)enemyPositions[0].x && mouseZ == (int)enemyPositions[0].y) {
-            enemyHover = true;
+        // Check if mouse is over enemy
+        if (enemyCount > 0) {
+            Vector2 enemyPos = enemyPositions[0];
+            if (mouseX == (int)enemyPos.x && mouseZ == (int)enemyPos.y) {
+                enemyHover = true;
+            }
         }
 
         // --- Handle mouse clicks ---
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (state == IDLE) {
-                // Movement click on reachable tile
                 if (mouseX >= 0 && mouseX < MAP_SIZE && mouseZ >= 0 && mouseZ < MAP_SIZE) {
                     if (IsTileReachable(&player, &tilemap, mouseX, mouseZ)) {
                         MovePlayerToTile(&player, mouseX, mouseZ);
@@ -124,9 +165,24 @@ int main(void) {
                 }
             } else {
                 // Attack mode: click enemy if in range
-                if (enemyHover && IsInAttackRange(state, &player, &tilemap, mouseX, mouseZ)) {
-                    printf("Attacking enemy at (%d, %d) with %s!\n", mouseX, mouseZ,
-                           state == MELEE ? "Melee" : (state == RANGED ? "Ranged" : "Spell"));
+                if (enemyHover && enemyCount > 0) {
+                    Vector2 enemyPos = enemyPositions[0];
+                    if (IsInAttackRange(state, &player, &tilemap, (int)enemyPos.x, (int)enemyPos.y)) {
+                        printf("Attacking enemy at (%d, %d) with %s!\n", (int)enemyPos.x, (int)enemyPos.y,
+                               state == MELEE ? "Melee" : (state == RANGED ? "Ranged" : "Spell"));
+                        // Kill enemy, spawn new one
+                        enemyPositions[0] = (Vector2){ -1, -1 }; // remove
+                        enemyCount = 0;
+                        // Spawn new enemy
+                        Vector2 newPos;
+                        SpawnEnemy(&player, &tilemap, &newPos);
+                        enemyPositions[0] = newPos;
+                        enemyCount = 1;
+                        printf("New enemy spawned at (%d, %d)\n", (int)newPos.x, (int)newPos.y);
+                        // Optionally exit attack mode? We'll stay in mode.
+                    } else {
+                        printf("Enemy not in attack range\n");
+                    }
                 }
             }
         }
@@ -175,7 +231,7 @@ int main(void) {
             }
         }
 
-        // --- Button click handling (one place) ---
+        // --- Button click handling ---
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             if (state == IDLE && !player.isMoving) {
                 int btnStartX = (SCREEN_WIDTH - (3 * BUTTON_WIDTH + 2 * BUTTON_SPACING)) / 2;
@@ -195,7 +251,6 @@ int main(void) {
                     printf("Switched to Spell mode\n");
                 }
             } else if (state != IDLE) {
-                // Cancel button
                 int cancelX = (SCREEN_WIDTH - BUTTON_WIDTH) / 2;
                 Rectangle cancelRect = { cancelX, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT };
                 if (CheckCollisionPointRec(mouse, cancelRect)) {
@@ -211,20 +266,24 @@ int main(void) {
 
         DrawTileMap(&tilemap, viewOffset);
 
-        // Draw enemy
-        Vector3 enemyPos3 = { enemyPositions[0].x, 0, enemyPositions[0].y };
-        Vector2 enemyScreen = WorldToScreen(enemyPos3, viewOffset, TILE_SIZE);
-        Vector2 enemyShadowScreen = WorldToScreen((Vector3){enemyPositions[0].x, 0, enemyPositions[0].y}, viewOffset, TILE_SIZE);
-        DrawEllipse(enemyShadowScreen.x, enemyShadowScreen.y, 16, 8, (Color){0,0,0,80});
-        Color enemyColor = enemyHover ? ORANGE : RED;
-        Color enemyLine = enemyHover ? (Color){255,200,0,255} : (Color){200,0,0,255};
-        DrawCircleV(enemyScreen, 16, enemyColor);
-        DrawCircleLines(enemyScreen.x, enemyScreen.y, 16, enemyLine);
-        DrawCircle(enemyScreen.x, enemyScreen.y, 3, (Color){255,255,255,200});
-        DrawText("E", enemyScreen.x - 5, enemyScreen.y - 8, 16, WHITE);
-        int s = 20;
-        DrawLine(enemyScreen.x - s, enemyScreen.y - s, enemyScreen.x + s, enemyScreen.y + s, (Color){255,0,0,180});
-        DrawLine(enemyScreen.x + s, enemyScreen.y - s, enemyScreen.x - s, enemyScreen.y + s, (Color){255,0,0,180});
+        // Draw enemy if exists
+        if (enemyCount > 0) {
+            Vector2 enemyPos = enemyPositions[0];
+            Vector3 enemyPos3 = { enemyPos.x, 0, enemyPos.y };
+            Vector2 enemyScreen = WorldToScreen(enemyPos3, viewOffset, TILE_SIZE);
+            Vector2 enemyShadowScreen = WorldToScreen((Vector3){enemyPos.x, 0, enemyPos.y}, viewOffset, TILE_SIZE);
+            DrawEllipse(enemyShadowScreen.x, enemyShadowScreen.y, 16, 8, (Color){0,0,0,80});
+            Color enemyColor = enemyHover ? ORANGE : RED;
+            Color enemyLine = enemyHover ? (Color){255,200,0,255} : (Color){200,0,0,255};
+            DrawCircleV(enemyScreen, 16, enemyColor);
+            DrawCircleLines(enemyScreen.x, enemyScreen.y, 16, enemyLine);
+            DrawCircle(enemyScreen.x, enemyScreen.y, 3, (Color){255,255,255,200});
+            DrawText("E", enemyScreen.x - 5, enemyScreen.y - 8, 16, WHITE);
+            // Red X on enemy tile
+            int s = 20;
+            DrawLine(enemyScreen.x - s, enemyScreen.y - s, enemyScreen.x + s, enemyScreen.y + s, (Color){255,0,0,180});
+            DrawLine(enemyScreen.x + s, enemyScreen.y - s, enemyScreen.x - s, enemyScreen.y + s, (Color){255,0,0,180});
+        }
 
         // Highlight tiles
         if (state == IDLE) {
@@ -305,7 +364,7 @@ int main(void) {
         if (state == IDLE) {
             DrawText("Click orange tiles to move, or choose attack mode", 10, 40, 16, LIGHTGRAY);
         } else {
-            DrawText("Click on enemy (within red range) to attack, press X to cancel", 10, 40, 16, LIGHTGRAY);
+            DrawText("Click on enemy (within red range) to attack, X to cancel", 10, 40, 16, LIGHTGRAY);
         }
         char pos[100];
         snprintf(pos, sizeof(pos), "Tile: (%d, %d)", (int)roundf(player.worldPos.x), (int)roundf(player.worldPos.z));
