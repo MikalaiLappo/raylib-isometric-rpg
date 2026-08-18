@@ -8,6 +8,8 @@
 
 int main(void) {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Isometric RPG");
+    SetWindowState(FLAG_WINDOW_TOPMOST);
+
     SetTargetFPS(60);
 
     Game game;
