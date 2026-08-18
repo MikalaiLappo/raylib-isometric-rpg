@@ -1,6 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "game/animation.h" // <-- ADD THIS
 #include "game/game_types.h"
 #include "player.h"
 #include "raylib.h"
@@ -26,6 +27,7 @@ typedef struct {
     Player       player;
     TileMap      tilemap;
     UIState      ui;
+    Animation    animations[MAX_ANIMATIONS]; // <-- ADD THIS
     int          reachable[100][2];
     int          reachableCount;
     int          attackRange[500][2];

@@ -1,4 +1,5 @@
 #include "game/combat.h"
+#include "game/animation.h"
 #include "game/enemy.h"
 #include <math.h>
 #include <stdlib.h>
@@ -53,23 +54,27 @@ bool IsInAttackRange(GameState state, const Player* player, const TileMap* map, 
     return false;
 }
 
-int PerformAttack(GameState state, const Player* player, const TileMap* map, int targetX, int targetZ) {
+int PerformAttack(GameState state, const Player* player, const TileMap* map, Game* game, int targetX, int targetZ) {
     int enemyIdx = GetEnemyAtTile(targetX, targetZ);
     if (enemyIdx == -1)
         return 0;
     if (!IsInAttackRange(state, player, map, targetX, targetZ))
         return 0;
 
-    int damage = 0;
+    int           damage   = 0;
+    AnimationType animType = ANIM_SWORD;
     switch (state) {
     case MELEE:
-        damage = 5;
+        damage   = 5;
+        animType = ANIM_SWORD;
         break;
     case RANGED:
-        damage = 3;
+        damage   = 3;
+        animType = ANIM_ARROW;
         break;
     case SPELL:
-        damage = 2;
+        damage   = 2;
+        animType = ANIM_LIGHTNING;
         break;
     default:
         damage = 0;
@@ -79,5 +84,9 @@ int PerformAttack(GameState state, const Player* player, const TileMap* map, int
         return 0;
 
     TakeDamage(enemyIdx, damage);
+
+    Vector3 enemyPos = {(float) targetX, 0, (float) targetZ};
+    SpawnAnimation(game->animations, animType, enemyPos);
+
     return damage;
 }

@@ -35,6 +35,7 @@ void InitGame(Game* game) {
     }
 
     InitUI(&game->ui);
+    InitAnimations(game->animations);
 
     game->state      = IDLE;
     game->hoverValid = false;
@@ -74,6 +75,8 @@ void UpdateGame(Game* game, float dt) {
             enemies[i].hitFlashTimer -= dt;
         }
     }
+
+    UpdateAnimations(game->animations, dt);
 }
 
 void DrawGame(Game* game) {
@@ -137,6 +140,8 @@ void DrawGame(Game* game) {
         pos.y -= (1.0f - alpha) * 20;
         DrawText(game->floatingTexts[i].text, pos.x - 20, pos.y - 10, 20, c);
     }
+
+    DrawAnimations(game->animations, game->viewOffset, game->tilemap.tileSize);
 
     DrawUI(&game->ui, game->state);
 

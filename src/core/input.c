@@ -13,7 +13,6 @@ void ProcessInput(Game* game) {
     int mouseX = (int) roundf(mouseWorld.x);
     int mouseZ = (int) roundf(mouseWorld.y);
 
-    // Update UI hover states
     UpdateUI(&game->ui, mouse, game->state);
     if (game->state != IDLE) {
         snprintf(game->ui.modeText, sizeof(game->ui.modeText), "Mode: %s",
@@ -22,7 +21,6 @@ void ProcessInput(Game* game) {
         strcpy(game->ui.modeText, "IDLE");
     }
 
-    // Enemy hover
     game->enemyHover    = false;
     game->hoverEnemyIdx = -1;
     int idx             = GetEnemyAtTile(mouseX, mouseZ);
@@ -31,7 +29,6 @@ void ProcessInput(Game* game) {
         game->hoverEnemyIdx = idx;
     }
 
-    // Handle clicks
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
         GameState newMode;
         if (IsModeButtonClicked(&game->ui, mouse, game->state, &newMode)) {
@@ -48,11 +45,9 @@ void ProcessInput(Game* game) {
                 }
             }
         } else {
-            // Attack mode
             if (game->enemyHover && IsInAttackRange(game->state, &game->player, &game->tilemap, mouseX, mouseZ)) {
-                int damage = PerformAttack(game->state, &game->player, &game->tilemap, mouseX, mouseZ);
+                int damage = PerformAttack(game->state, &game->player, &game->tilemap, game, mouseX, mouseZ);
                 if (damage > 0) {
-                    // Show floating damage text
                     Vector3 enemyPos  = {(float) mouseX, 0, (float) mouseZ};
                     Vector2 screenPos = WorldToScreen(enemyPos, game->viewOffset, game->tilemap.tileSize);
                     char    damageText[8];
@@ -67,7 +62,6 @@ void ProcessInput(Game* game) {
         }
     }
 
-    // Keyboard movement (arrow keys / WASD)
     if (game->state == IDLE && !game->player.isMoving) {
         int  cx = (int) roundf(game->player.worldPos.x);
         int  cz = (int) roundf(game->player.worldPos.z);
@@ -92,7 +86,6 @@ void ProcessInput(Game* game) {
         }
     }
 
-    // Update hover highlight for tiles
     game->hoverValid = false;
     if (game->state == IDLE) {
         if (mouseX >= 0 && mouseX < game->tilemap.width && mouseZ >= 0 && mouseZ < game->tilemap.height) {
