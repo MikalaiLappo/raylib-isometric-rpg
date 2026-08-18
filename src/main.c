@@ -1,10 +1,10 @@
 #define _XOPEN_SOURCE 600
+#include "game/game.h"
+#include "raylib.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include "raylib.h"
-#include "game/game.h"
 
 int main(void) {
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Isometric RPG");

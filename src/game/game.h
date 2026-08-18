@@ -1,9 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "raylib.h"
 #include "game/game_types.h"
 #include "player.h"
+#include "raylib.h"
 #include "rendering/tilemap.h"
 #include "ui.h"
 
@@ -15,28 +15,28 @@
 
 typedef struct {
     Vector2 screenPos;
-    char text[16];
-    float timer;
-    float maxTimer;
-    Color color;
+    char    text[16];
+    float   timer;
+    float   maxTimer;
+    Color   color;
 } FloatingText;
 
 typedef struct {
-    GameState state;
-    Player player;
-    TileMap tilemap;
-    UIState ui;
-    int reachable[100][2];
-    int reachableCount;
-    int attackRange[500][2];
-    int attackCount;
-    int hoverX, hoverZ;
-    bool hoverValid;
-    int hoverEnemyIdx;
-    bool enemyHover;
-    Vector2 viewOffset;
+    GameState    state;
+    Player       player;
+    TileMap      tilemap;
+    UIState      ui;
+    int          reachable[100][2];
+    int          reachableCount;
+    int          attackRange[500][2];
+    int          attackCount;
+    int          hoverX, hoverZ;
+    bool         hoverValid;
+    int          hoverEnemyIdx;
+    bool         enemyHover;
+    Vector2      viewOffset;
     FloatingText floatingTexts[MAX_FLOATING_TEXTS];
-    int floatingTextCount;
+    int          floatingTextCount;
 } Game;
 
 void InitGame(Game* game);

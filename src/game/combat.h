@@ -7,6 +7,7 @@
 
 void GetAttackRange(GameState state, Player* player, TileMap* map, int rangeTiles[][2], int* count);
 bool IsInAttackRange(GameState state, Player* player, TileMap* map, int tx, int tz);
-bool PerformAttack(GameState state, Player* player, TileMap* map, int targetX, int targetZ);
+int  PerformAttack(GameState state, Player* player, TileMap* map, int targetX,
+                   int targetZ); // returns damage dealt (0 if no enemy or out of range)
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef UI_H
 #define UI_H
 
-#include "raylib.h"
 #include "game/game_types.h" // for GameState
+#include "raylib.h"
 
 typedef struct {
     bool meleeHover;

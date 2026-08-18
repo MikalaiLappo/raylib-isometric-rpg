@@ -1,33 +1,34 @@
 #include "game/game.h"
-#include "game/enemy.h"
-#include "game/combat.h"
 #include "core/input.h"
-#include "ui.h"
+#include "game/combat.h"
+#include "game/enemy.h"
 #include "rendering/isometric.h"
 #include "rendering/tilemap.h"
+#include "ui.h"
 #include <stdio.h>
 #include <string.h>
 
 void AddFloatingText(Game* game, Vector2 screenPos, const char* text, Color color) {
-    if (game->floatingTextCount >= MAX_FLOATING_TEXTS) return;
-    int idx = game->floatingTextCount++;
+    if (game->floatingTextCount >= MAX_FLOATING_TEXTS)
+        return;
+    int idx                            = game->floatingTextCount++;
     game->floatingTexts[idx].screenPos = screenPos;
     strcpy(game->floatingTexts[idx].text, text);
-    game->floatingTexts[idx].timer = 1.0f;
+    game->floatingTexts[idx].timer    = 1.0f;
     game->floatingTexts[idx].maxTimer = 1.0f;
-    game->floatingTexts[idx].color = color;
+    game->floatingTexts[idx].color    = color;
 }
 
 void InitGame(Game* game) {
     game->tilemap = CreateTileMap(MAP_SIZE, MAP_SIZE, TILE_SIZE);
     GenerateTestMap(&game->tilemap);
 
-    game->player = CreatePlayer();
-    game->player.worldPos = (Vector3){ MAP_SIZE/2.0f, 0, MAP_SIZE/2.0f };
+    game->player           = CreatePlayer();
+    game->player.worldPos  = (Vector3){MAP_SIZE / 2.0f, 0, MAP_SIZE / 2.0f};
     game->player.targetPos = game->player.worldPos;
 
     InitEnemies();
-    Vector2 playerPos = { game->player.worldPos.x, game->player.worldPos.z };
+    Vector2 playerPos = {game->player.worldPos.x, game->player.worldPos.z};
     // Spawn 3 enemies initially
     for (int i = 0; i < 3; i++) {
         SpawnEnemy(&game->tilemap, playerPos);
@@ -35,22 +36,22 @@ void InitGame(Game* game) {
 
     InitUI(&game->ui);
 
-    game->state = IDLE;
+    game->state      = IDLE;
     game->hoverValid = false;
     game->hoverX = game->hoverZ = -1;
-    game->hoverEnemyIdx = -1;
-    game->enemyHover = false;
-    game->reachableCount = 0;
-    game->attackCount = 0;
-    game->floatingTextCount = 0;
+    game->hoverEnemyIdx         = -1;
+    game->enemyHover            = false;
+    game->reachableCount        = 0;
+    game->attackCount           = 0;
+    game->floatingTextCount     = 0;
 }
 
 void UpdateGame(Game* game, float dt) {
     UpdatePlayer(&game->player, &game->tilemap, dt);
 
-    Vector2 playerScreen = WorldToScreen(game->player.worldPos, (Vector2){0,0}, game->tilemap.tileSize);
-    game->viewOffset.x = SCREEN_WIDTH/2.0f - playerScreen.x;
-    game->viewOffset.y = SCREEN_HEIGHT/2.5f - playerScreen.y;
+    Vector2 playerScreen = WorldToScreen(game->player.worldPos, (Vector2){0, 0}, game->tilemap.tileSize);
+    game->viewOffset.x   = SCREEN_WIDTH / 2.0f - playerScreen.x;
+    game->viewOffset.y   = SCREEN_HEIGHT / 2.5f - playerScreen.y;
 
     ProcessInput(game);
 
@@ -79,7 +80,7 @@ void UpdateGame(Game* game, float dt) {
 
 void DrawGame(Game* game) {
     BeginDrawing();
-    ClearBackground((Color){30,30,40,255});
+    ClearBackground((Color){30, 30, 40, 255});
 
     DrawTileMap(&game->tilemap, game->viewOffset);
 
@@ -89,15 +90,15 @@ void DrawGame(Game* game) {
     // Highlight tiles (movement or attack)
     if (game->state == IDLE) {
         for (int i = 0; i < game->reachableCount; i++) {
-            Vector3 pos = { (float)game->reachable[i][0], 0, (float)game->reachable[i][1] };
+            Vector3 pos       = {(float) game->reachable[i][0], 0, (float) game->reachable[i][1]};
             Vector2 screenPos = WorldToScreen(pos, game->viewOffset, game->tilemap.tileSize);
-            DrawIsometricDiamond(screenPos, game->tilemap.tileSize, (Color){255,165,0,130});
-            int halfW = game->tilemap.tileSize/2, halfH = game->tilemap.tileSize/4;
-            Vector2 top = { screenPos.x, screenPos.y - halfH };
-            Vector2 right = { screenPos.x + halfW, screenPos.y };
-            Vector2 bottom = { screenPos.x, screenPos.y + halfH };
-            Vector2 left = { screenPos.x - halfW, screenPos.y };
-            Color outline = {255,165,0,200};
+            DrawIsometricDiamond(screenPos, game->tilemap.tileSize, (Color){255, 165, 0, 130});
+            int     halfW = game->tilemap.tileSize / 2, halfH = game->tilemap.tileSize / 4;
+            Vector2 top     = {screenPos.x, screenPos.y - halfH};
+            Vector2 right   = {screenPos.x + halfW, screenPos.y};
+            Vector2 bottom  = {screenPos.x, screenPos.y + halfH};
+            Vector2 left    = {screenPos.x - halfW, screenPos.y};
+            Color   outline = {255, 165, 0, 200};
             DrawLineEx(top, right, 2.0f, outline);
             DrawLineEx(right, bottom, 2.0f, outline);
             DrawLineEx(bottom, left, 2.0f, outline);
@@ -105,15 +106,15 @@ void DrawGame(Game* game) {
         }
     } else {
         for (int i = 0; i < game->attackCount; i++) {
-            Vector3 pos = { (float)game->attackRange[i][0], 0, (float)game->attackRange[i][1] };
+            Vector3 pos       = {(float) game->attackRange[i][0], 0, (float) game->attackRange[i][1]};
             Vector2 screenPos = WorldToScreen(pos, game->viewOffset, game->tilemap.tileSize);
-            DrawIsometricDiamond(screenPos, game->tilemap.tileSize, (Color){255,0,0,130});
-            int halfW = game->tilemap.tileSize/2, halfH = game->tilemap.tileSize/4;
-            Vector2 top = { screenPos.x, screenPos.y - halfH };
-            Vector2 right = { screenPos.x + halfW, screenPos.y };
-            Vector2 bottom = { screenPos.x, screenPos.y + halfH };
-            Vector2 left = { screenPos.x - halfW, screenPos.y };
-            Color outline = {255,0,0,200};
+            DrawIsometricDiamond(screenPos, game->tilemap.tileSize, (Color){255, 0, 0, 130});
+            int     halfW = game->tilemap.tileSize / 2, halfH = game->tilemap.tileSize / 4;
+            Vector2 top     = {screenPos.x, screenPos.y - halfH};
+            Vector2 right   = {screenPos.x + halfW, screenPos.y};
+            Vector2 bottom  = {screenPos.x, screenPos.y + halfH};
+            Vector2 left    = {screenPos.x - halfW, screenPos.y};
+            Color   outline = {255, 0, 0, 200};
             DrawLineEx(top, right, 2.0f, outline);
             DrawLineEx(right, bottom, 2.0f, outline);
             DrawLineEx(bottom, left, 2.0f, outline);
@@ -123,12 +124,12 @@ void DrawGame(Game* game) {
 
     // Hover highlight
     if (game->hoverValid) {
-        Vector3 pos = { (float)game->hoverX, 0, (float)game->hoverZ };
-        Vector2 screenPos = WorldToScreen(pos, game->viewOffset, game->tilemap.tileSize);
-        Color hoverColor = (game->state == IDLE) ? (Color){255,200,50,180} : (Color){255,100,100,180};
+        Vector3 pos        = {(float) game->hoverX, 0, (float) game->hoverZ};
+        Vector2 screenPos  = WorldToScreen(pos, game->viewOffset, game->tilemap.tileSize);
+        Color   hoverColor = (game->state == IDLE) ? (Color){255, 200, 50, 180} : (Color){255, 100, 100, 180};
         DrawIsometricDiamond(screenPos, game->tilemap.tileSize, hoverColor);
-        DrawCircleLines(screenPos.x, screenPos.y, 24, (Color){255,200,0,255});
-        DrawCircleLines(screenPos.x, screenPos.y, 28, (Color){255,200,0,100});
+        DrawCircleLines(screenPos.x, screenPos.y, 24, (Color){255, 200, 0, 255});
+        DrawCircleLines(screenPos.x, screenPos.y, 28, (Color){255, 200, 0, 100});
     }
 
     DrawPlayer(&game->player, game->tilemap.tileSize, game->viewOffset);
@@ -136,8 +137,8 @@ void DrawGame(Game* game) {
     // Draw floating texts
     for (int i = 0; i < game->floatingTextCount; i++) {
         float alpha = game->floatingTexts[i].timer / game->floatingTexts[i].maxTimer;
-        Color c = game->floatingTexts[i].color;
-        c.a = (unsigned char)(255 * alpha);
+        Color c     = game->floatingTexts[i].color;
+        c.a         = (unsigned char) (255 * alpha);
         Vector2 pos = game->floatingTexts[i].screenPos;
         pos.y -= (1.0f - alpha) * 20; // float upward
         DrawText(game->floatingTexts[i].text, pos.x - 20, pos.y - 10, 20, c);
@@ -153,9 +154,11 @@ void DrawGame(Game* game) {
     else
         DrawText("Click on enemy (within red range) to attack, press X to cancel", 10, 40, 16, LIGHTGRAY);
     char pos[100];
-    snprintf(pos, sizeof(pos), "Tile: (%d, %d)", (int)roundf(game->player.worldPos.x), (int)roundf(game->player.worldPos.z));
+    snprintf(pos, sizeof(pos), "Tile: (%d, %d)", (int) roundf(game->player.worldPos.x),
+             (int) roundf(game->player.worldPos.z));
     DrawText(pos, 10, 70, 16, LIGHTGRAY);
-    if (game->player.isMoving) DrawText("Moving...", 10, 95, 16, YELLOW);
+    if (game->player.isMoving)
+        DrawText("Moving...", 10, 95, 16, YELLOW);
 
     EndDrawing();
 }
