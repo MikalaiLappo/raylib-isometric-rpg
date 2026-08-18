@@ -1,0 +1,16 @@
+# Build directories
+build/
+*.o
+*.exe
+*.app
+
+# macOS
+.DS_Store
+*.dSYM/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
