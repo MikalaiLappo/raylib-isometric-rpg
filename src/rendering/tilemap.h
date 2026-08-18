@@ -2,7 +2,7 @@
 #define TILEMAP_H
 
 #include "raylib.h"
-#include "isometric.h"
+#include "rendering/isometric.h"
 #include <stdlib.h>
 
 typedef enum { TILE_GRASS, TILE_DIRT, TILE_WATER, TILE_STONE } TileType;

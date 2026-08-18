@@ -1,8 +1,9 @@
-#include "player.h"
 #include <math.h>
 #include <stdlib.h>
-
-// enemyPositions and enemyCount are defined in main.c, declared extern in player.h
+#include "player.h"
+#include "game/enemy.h"          // for IsTileOccupiedByEnemy
+#include "rendering/isometric.h"
+#include "rendering/tilemap.h"
 
 Player CreatePlayer(void) {
     Player player;
@@ -18,12 +19,7 @@ Player CreatePlayer(void) {
 }
 
 bool IsTileOccupied(int tx, int tz) {
-    for (int i = 0; i < enemyCount; i++) {
-        if ((int)enemyPositions[i].x == tx && (int)enemyPositions[i].y == tz) {
-            return true;
-        }
-    }
-    return false;
+    return IsTileOccupiedByEnemy(tx, tz);
 }
 
 static void ComputePath(Player* player, int tx, int tz) {

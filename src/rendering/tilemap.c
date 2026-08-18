@@ -1,4 +1,4 @@
-#include "tilemap.h"
+#include "rendering/tilemap.h"
 #include <stdio.h>
 
 TileMap CreateTileMap(int width, int height, int tileSize) {
