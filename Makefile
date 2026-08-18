@@ -10,7 +10,6 @@ SRC_DIR = src
 BUILD_DIR = build
 TARGET = $(BUILD_DIR)/isometric-rpg
 
-# All .c files in src/ and subdirectories
 SOURCES = $(wildcard $(SRC_DIR)/*.c) \
           $(wildcard $(SRC_DIR)/rendering/*.c) \
           $(wildcard $(SRC_DIR)/core/*.c) \
@@ -33,4 +32,13 @@ clean:
 run: $(TARGET)
 	./$(TARGET)
 
-.PHONY: all clean run
+format:
+	clang-format -i $(shell find src -name '*.c' -o -name '*.h')
+
+format-check:
+	clang-format --dry-run --Werror $(shell find src -name '*.c' -o -name '*.h')
+
+lint:
+	cppcheck --enable=all --suppress=missingIncludeSystem --error-exitcode=1 src/
+
+.PHONY: all clean run format format-check lint
