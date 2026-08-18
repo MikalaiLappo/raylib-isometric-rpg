@@ -8,9 +8,6 @@
 
 #define MAX_STEPS 3
 
-extern Vector2 enemyPositions[10];
-extern int     enemyCount;
-
 typedef struct {
     Vector3 worldPos;
     Vector3 targetPos;
@@ -25,11 +22,10 @@ typedef struct {
 } Player;
 
 Player CreatePlayer(void);
-void   UpdatePlayer(Player* player, TileMap* map, float dt);
-void   DrawPlayer(Player* player, int tileSize, Vector2 viewOffset);
+void   UpdatePlayer(Player* player, const TileMap* map, float dt);
 void   MovePlayerToTile(Player* player, int tx, int tz);
-void   GetReachableTiles(Player* player, TileMap* map, int reachable[][2], int* count);
-bool   IsTileReachable(Player* player, TileMap* map, int tx, int tz);
+void   GetReachableTiles(const Player* player, const TileMap* map, int reachable[][2], int* count);
+bool   IsTileReachable(const Player* player, const TileMap* map, int tx, int tz);
 bool   IsTileOccupied(int tx, int tz);
-
+void   DrawPlayer(const Player* player, int tileSize, Vector2 viewOffset);
 #endif

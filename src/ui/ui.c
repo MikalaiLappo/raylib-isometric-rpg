@@ -45,7 +45,7 @@ void UpdateUI(UIState* ui, Vector2 mouse, GameState state) {
     }
 }
 
-void DrawUI(UIState* ui, GameState state) {
+void DrawUI(const UIState* ui, GameState state) {
     DrawRectangle(0, PANEL_Y, GetScreenWidth(), PANEL_HEIGHT, (Color){40, 40, 50, 220});
     DrawLine(0, PANEL_Y, GetScreenWidth(), PANEL_Y, (Color){80, 80, 100, 255});
 
@@ -77,7 +77,7 @@ void DrawUI(UIState* ui, GameState state) {
     }
 }
 
-bool IsCancelClicked(UIState* ui, Vector2 mouse, GameState state) {
+bool IsCancelClicked(const UIState* ui, Vector2 mouse, GameState state) {
     if (state == IDLE)
         return false;
     if (mouse.y < PANEL_Y)
@@ -87,7 +87,7 @@ bool IsCancelClicked(UIState* ui, Vector2 mouse, GameState state) {
     return CheckCollisionPointRec(mouse, cancelRect);
 }
 
-bool IsModeButtonClicked(UIState* ui, Vector2 mouse, GameState state, GameState* newMode) {
+bool IsModeButtonClicked(const UIState* ui, Vector2 mouse, GameState state, GameState* newMode) {
     if (state != IDLE)
         return false;
     if (mouse.y < PANEL_Y)

@@ -1,6 +1,12 @@
 #include "rendering/tilemap.h"
 #include <stdio.h>
 
+static Tile* GetTile(TileMap* map, int x, int z) {
+    if (x < 0 || x >= map->width || z < 0 || z >= map->height)
+        return NULL;
+    return &map->tiles[z * map->width + x];
+}
+
 TileMap CreateTileMap(int width, int height, int tileSize) {
     TileMap map;
     map.width    = width;
@@ -47,10 +53,10 @@ void GenerateTestMap(TileMap* map) {
     }
 }
 
-void DrawTileMap(TileMap* map, Vector2 viewOffset) {
+void DrawTileMap(const TileMap* map, Vector2 viewOffset) {
     for (int z = 0; z < map->height; z++) {
         for (int x = 0; x < map->width; x++) {
-            Tile* tile = GetTile(map, x, z);
+            Tile* tile = GetTile((TileMap*) map, x, z);
             if (!tile)
                 continue;
             Vector3 pos       = {(float) x, (float) tile->height, (float) z};
@@ -58,10 +64,4 @@ void DrawTileMap(TileMap* map, Vector2 viewOffset) {
             DrawIsometricDiamond(screenPos, map->tileSize, tile->color);
         }
     }
-}
-
-Tile* GetTile(TileMap* map, int x, int z) {
-    if (x < 0 || x >= map->width || z < 0 || z >= map->height)
-        return NULL;
-    return &map->tiles[z * map->width + x];
 }

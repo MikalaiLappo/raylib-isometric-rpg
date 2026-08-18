@@ -2,6 +2,7 @@
 #include "core/input.h"
 #include "game/combat.h"
 #include "game/enemy.h"
+#include "player.h"
 #include "rendering/isometric.h"
 #include "rendering/tilemap.h"
 #include "ui.h"
@@ -29,7 +30,6 @@ void InitGame(Game* game) {
 
     InitEnemies();
     Vector2 playerPos = {game->player.worldPos.x, game->player.worldPos.z};
-    // Spawn 3 enemies initially
     for (int i = 0; i < 3; i++) {
         SpawnEnemy(&game->tilemap, playerPos);
     }
@@ -61,7 +61,6 @@ void UpdateGame(Game* game, float dt) {
         GetAttackRange(game->state, &game->player, &game->tilemap, game->attackRange, &game->attackCount);
     }
 
-    // Update floating texts
     for (int i = game->floatingTextCount - 1; i >= 0; i--) {
         game->floatingTexts[i].timer -= dt;
         if (game->floatingTexts[i].timer <= 0) {
@@ -70,7 +69,6 @@ void UpdateGame(Game* game, float dt) {
         }
     }
 
-    // Update enemy hit flash timers
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemies[i].alive && enemies[i].hitFlashTimer > 0) {
             enemies[i].hitFlashTimer -= dt;
@@ -84,10 +82,8 @@ void DrawGame(Game* game) {
 
     DrawTileMap(&game->tilemap, game->viewOffset);
 
-    // Draw enemies (with health bars)
     DrawEnemies(game->viewOffset, game->tilemap.tileSize);
 
-    // Highlight tiles (movement or attack)
     if (game->state == IDLE) {
         for (int i = 0; i < game->reachableCount; i++) {
             Vector3 pos       = {(float) game->reachable[i][0], 0, (float) game->reachable[i][1]};
@@ -122,7 +118,6 @@ void DrawGame(Game* game) {
         }
     }
 
-    // Hover highlight
     if (game->hoverValid) {
         Vector3 pos        = {(float) game->hoverX, 0, (float) game->hoverZ};
         Vector2 screenPos  = WorldToScreen(pos, game->viewOffset, game->tilemap.tileSize);
@@ -134,20 +129,17 @@ void DrawGame(Game* game) {
 
     DrawPlayer(&game->player, game->tilemap.tileSize, game->viewOffset);
 
-    // Draw floating texts
     for (int i = 0; i < game->floatingTextCount; i++) {
         float alpha = game->floatingTexts[i].timer / game->floatingTexts[i].maxTimer;
         Color c     = game->floatingTexts[i].color;
         c.a         = (unsigned char) (255 * alpha);
         Vector2 pos = game->floatingTexts[i].screenPos;
-        pos.y -= (1.0f - alpha) * 20; // float upward
+        pos.y -= (1.0f - alpha) * 20;
         DrawText(game->floatingTexts[i].text, pos.x - 20, pos.y - 10, 20, c);
     }
 
-    // UI
     DrawUI(&game->ui, game->state);
 
-    // Top-left info
     DrawText("ISOMETRIC RPG - Combat", 10, 10, 20, WHITE);
     if (game->state == IDLE)
         DrawText("Click orange tiles to move, or choose attack mode", 10, 40, 16, LIGHTGRAY);

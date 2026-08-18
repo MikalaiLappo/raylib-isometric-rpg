@@ -14,16 +14,6 @@ static inline Vector2 WorldToScreen(Vector3 worldPos, Vector2 offset, int tileSi
     return screenPos;
 }
 
-static inline Vector2 ScreenToWorld(Vector2 screenPos, int tileSize) {
-    float half    = tileSize / 2.0f;
-    float quarter = tileSize / 4.0f;
-    float a       = screenPos.x / half;
-    float b       = screenPos.y / quarter;
-    float x       = (a + b) / 2.0f;
-    float z       = (b - a) / 2.0f;
-    return (Vector2) {x, z};
-}
-
 static inline void DrawIsometricDiamond(Vector2 center, int size, Color color) {
     int     halfW  = size / 2;
     int     halfH  = size / 4;

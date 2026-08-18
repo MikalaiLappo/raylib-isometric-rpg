@@ -7,20 +7,19 @@
 #define MAX_ENEMIES 10
 
 typedef struct {
-    Vector2 pos; // tile position (x, z)
+    Vector2 pos;
     bool    alive;
     Color   color;
     int     health;
     int     maxHealth;
-    float   hitFlashTimer; // > 0 means flash white
+    float   hitFlashTimer;
 } Enemy;
 
 extern Enemy enemies[MAX_ENEMIES];
 extern int   enemyCount;
 
 void InitEnemies(void);
-void SpawnEnemy(TileMap* map, Vector2 avoidPos);
-void RemoveEnemy(int index);
+void SpawnEnemy(const TileMap* map, Vector2 avoidPos);
 void TakeDamage(int index, int damage);
 void DrawEnemies(Vector2 viewOffset, int tileSize);
 bool IsTileOccupiedByEnemy(int tx, int tz);

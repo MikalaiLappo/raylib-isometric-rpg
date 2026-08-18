@@ -1,5 +1,5 @@
 #include "player.h"
-#include "game/enemy.h" // for IsTileOccupiedByEnemy
+#include "game/enemy.h"
 #include "rendering/isometric.h"
 #include "rendering/tilemap.h"
 #include <math.h>
@@ -62,7 +62,7 @@ void MovePlayerToTile(Player* player, int tx, int tz) {
     player->stepTimer = 0.0f;
 }
 
-void GetReachableTiles(Player* player, TileMap* map, int reachable[][2], int* count) {
+void GetReachableTiles(const Player* player, const TileMap* map, int reachable[][2], int* count) {
     *count = 0;
     if (player->isMoving)
         return;
@@ -78,7 +78,6 @@ void GetReachableTiles(Player* player, TileMap* map, int reachable[][2], int* co
                 continue;
             if (IsTileOccupied(nx, nz))
                 continue;
-            // Check if path would be blocked
             bool blocked = false;
             int  tempX = cx, tempZ = cz;
             int  stepX = (nx > cx) ? 1 : (nx < cx) ? -1 : 0;
@@ -102,7 +101,7 @@ void GetReachableTiles(Player* player, TileMap* map, int reachable[][2], int* co
     }
 }
 
-bool IsTileReachable(Player* player, TileMap* map, int tx, int tz) {
+bool IsTileReachable(const Player* player, const TileMap* map, int tx, int tz) {
     int reachable[100][2], count;
     GetReachableTiles(player, map, reachable, &count);
     for (int i = 0; i < count; i++) {
@@ -112,7 +111,7 @@ bool IsTileReachable(Player* player, TileMap* map, int tx, int tz) {
     return false;
 }
 
-void UpdatePlayer(Player* player, TileMap* map, float dt) {
+void UpdatePlayer(Player* player, const TileMap* map, float dt) {
     if (!player->isMoving) {
         int  cx = (int) roundf(player->worldPos.x);
         int  cz = (int) roundf(player->worldPos.z);
@@ -161,7 +160,7 @@ void UpdatePlayer(Player* player, TileMap* map, float dt) {
     }
 }
 
-void DrawPlayer(Player* player, int tileSize, Vector2 viewOffset) {
+void DrawPlayer(const Player* player, int tileSize, Vector2 viewOffset) {
     Vector2 screenPos    = WorldToScreen(player->worldPos, viewOffset, tileSize);
     Vector3 shadowPos    = {player->worldPos.x, 0, player->worldPos.z};
     Vector2 shadowScreen = WorldToScreen(shadowPos, viewOffset, tileSize);

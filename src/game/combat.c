@@ -5,7 +5,7 @@
 
 #define MAX_ATTACK_TILES 500
 
-void GetAttackRange(GameState state, Player* player, TileMap* map, int rangeTiles[][2], int* count) {
+void GetAttackRange(GameState state, const Player* player, const TileMap* map, int rangeTiles[][2], int* count) {
     *count       = 0;
     int cx       = (int) roundf(player->worldPos.x);
     int cz       = (int) roundf(player->worldPos.z);
@@ -42,7 +42,7 @@ void GetAttackRange(GameState state, Player* player, TileMap* map, int rangeTile
     }
 }
 
-bool IsInAttackRange(GameState state, Player* player, TileMap* map, int tx, int tz) {
+bool IsInAttackRange(GameState state, const Player* player, const TileMap* map, int tx, int tz) {
     int rangeTiles[MAX_ATTACK_TILES][2];
     int count;
     GetAttackRange(state, player, map, rangeTiles, &count);
@@ -53,14 +53,13 @@ bool IsInAttackRange(GameState state, Player* player, TileMap* map, int tx, int 
     return false;
 }
 
-int PerformAttack(GameState state, Player* player, TileMap* map, int targetX, int targetZ) {
+int PerformAttack(GameState state, const Player* player, const TileMap* map, int targetX, int targetZ) {
     int enemyIdx = GetEnemyAtTile(targetX, targetZ);
     if (enemyIdx == -1)
         return 0;
     if (!IsInAttackRange(state, player, map, targetX, targetZ))
         return 0;
 
-    // Calculate damage based on attack mode
     int damage = 0;
     switch (state) {
     case MELEE:
@@ -79,7 +78,6 @@ int PerformAttack(GameState state, Player* player, TileMap* map, int targetX, in
     if (damage == 0)
         return 0;
 
-    // Apply damage
     TakeDamage(enemyIdx, damage);
     return damage;
 }

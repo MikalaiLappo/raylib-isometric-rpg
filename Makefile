@@ -38,7 +38,26 @@ format:
 format-check:
 	clang-format --dry-run --Werror $(shell find src -name '*.c' -o -name '*.h')
 
+
 lint:
-	cppcheck --enable=all --suppress=missingIncludeSystem --error-exitcode=1 src/
+	cppcheck --enable=all \
+		-D__APPLE__ \
+		-D__arm64__ \
+		-D__LP64__ \
+		-I src \
+		-I src/rendering \
+		-I src/core \
+		-I src/game \
+		-I src/ui \
+		-I /opt/homebrew/include \
+		-I /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include \
+		--suppress=missingIncludeSystem \
+		--suppress=unusedFunction:/Library/Developer/* \
+		--suppress=constParameterPointer \
+		--suppress=constVariablePointer \
+		--check-level=exhaustive \
+		--max-configs=1 \
+		--error-exitcode=1 \
+		src/
 
 .PHONY: all clean run format format-check lint

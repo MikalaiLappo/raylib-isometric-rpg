@@ -14,7 +14,7 @@ void InitEnemies(void) {
     }
 }
 
-void SpawnEnemy(TileMap* map, Vector2 avoidPos) {
+void SpawnEnemy(const TileMap* map, Vector2 avoidPos) {
     if (enemyCount >= MAX_ENEMIES)
         return;
     int  attempts = 0;
@@ -28,7 +28,7 @@ void SpawnEnemy(TileMap* map, Vector2 avoidPos) {
         if (IsTileOccupiedByEnemy(x, z))
             continue;
         found = true;
-        break;
+        attempts++;
     }
     if (!found)
         return;
@@ -46,13 +46,13 @@ void SpawnEnemy(TileMap* map, Vector2 avoidPos) {
     enemies[idx].pos           = (Vector2){(float) x, (float) z};
     enemies[idx].alive         = true;
     enemies[idx].color         = RED;
-    enemies[idx].health        = 10; // <-- changed to 10
+    enemies[idx].health        = 10;
     enemies[idx].maxHealth     = 10;
     enemies[idx].hitFlashTimer = 0.0f;
     enemyCount++;
 }
 
-void RemoveEnemy(int index) {
+static void RemoveEnemy(int index) {
     if (index < 0 || index >= MAX_ENEMIES)
         return;
     if (!enemies[index].alive)
@@ -91,7 +91,6 @@ void DrawEnemies(Vector2 viewOffset, int tileSize) {
         DrawLine(screenPos.x - s, screenPos.y - s, screenPos.x + s, screenPos.y + s, (Color){255, 0, 0, 180});
         DrawLine(screenPos.x + s, screenPos.y - s, screenPos.x - s, screenPos.y + s, (Color){255, 0, 0, 180});
 
-        // Health bar
         float healthPercent = (float) enemies[i].health / enemies[i].maxHealth;
         Color barColor      = (healthPercent > 0.6f) ? GREEN : (healthPercent > 0.3f) ? YELLOW : RED;
         int   barWidth      = 30;

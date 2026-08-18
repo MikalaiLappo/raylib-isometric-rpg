@@ -21,7 +21,6 @@ typedef struct {
 TileMap CreateTileMap(int width, int height, int tileSize);
 void    UnloadTileMap(TileMap* map);
 void    GenerateTestMap(TileMap* map);
-void    DrawTileMap(TileMap* map, Vector2 viewOffset);
-Tile*   GetTile(TileMap* map, int x, int z);
+void    DrawTileMap(const TileMap* map, Vector2 viewOffset);
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef UI_H
 #define UI_H
 
-#include "game/game_types.h" // for GameState
+#include "game/game_types.h"
 #include "raylib.h"
 
 typedef struct {
@@ -14,8 +14,8 @@ typedef struct {
 
 void InitUI(UIState* ui);
 void UpdateUI(UIState* ui, Vector2 mouse, GameState state);
-void DrawUI(UIState* ui, GameState state);
-bool IsCancelClicked(UIState* ui, Vector2 mouse, GameState state);
-bool IsModeButtonClicked(UIState* ui, Vector2 mouse, GameState state, GameState* newMode);
+void DrawUI(const UIState* ui, GameState state);
+bool IsCancelClicked(const UIState* ui, Vector2 mouse, GameState state);
+bool IsModeButtonClicked(const UIState* ui, Vector2 mouse, GameState state, GameState* newMode);
 
 #endif
